@@ -9,9 +9,11 @@ prerequisite_packages:
   - lsb-release
   - software-properties-common
   - wget
+
 keyring_path: /etc/apt/keyrings
+source_list_path: /etc/apt/sources.list.d
 root_app_url: https://download.docker.com/linux/debian
 app_url: "{{ root_app_url }}/gpg"
-key_final_destination: /etc/apt/keyrings/docker.asc
-sourcelist_destination: /etc/apt/sources.list.d/docker.list
-sourcelist_content: deb [arch=amd64 signed-by={{ key_final_destination }}] {{ root_app_url }} {{ ansible_distribution_release }} stable
+key_final_destination: "{{ keyring_path }}/docker.asc"
+ourcelist_destination: "{{ source_list_path }}/docker.list"
+sourcelist_content: "deb [arch=amd64 signed-by={{ key_final_destination }}] {{ root_app_url }} {{ ansible_distribution_release }} stable"
