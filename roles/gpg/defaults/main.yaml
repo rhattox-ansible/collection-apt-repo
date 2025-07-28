@@ -14,7 +14,8 @@ keyring_extension: gpg
 application_key: "{{ application_name }}.{{ keyring_extension }}"
 tmp_path: /tmp/collection-apt-repository
 tmp_key_path: "{{ tmp_path }}/{{ application_key }}"
-keyring_path: /usr/share/keyrings
+keyring_path: /etc/apt/keyrings
+
 key_location: "{{ keyring_path }}/{{ application_key }}"
 
 #
