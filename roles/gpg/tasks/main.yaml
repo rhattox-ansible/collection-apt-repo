@@ -1,0 +1,56 @@
+- name: Update Packages And Add Required Packages
+  block:
+    - name: Update APT package cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Prerequisites
+      ansible.builtin.apt:
+        name: "{{ prerequisite_packages | from_yaml }}"
+        state: present
+
+- name: Cleanup Old Installation
+  block:
+    - name: Check if the GPG Key exists
+      ansible.builtin.stat:
+        path: "{{ key_location }}"
+      register: file_check
+
+    - name: Remove GPG file
+      when: file_check.stat.exists
+      ansible.builtin.file:
+        path: "{{ key_location }}"
+        state: absent
+        force: true
+
+- name: Download And Install GPG Key
+  block:
+    - name: Download GPG key
+      ansible.builtin.get_url:
+        url: "{{ gpg_key_url }}"
+        dest: "{{ tmp_key_path }}"
+        mode: "0777"
+
+    - name: Install GPG Key
+      changed_when: false
+      ansible.builtin.shell: |
+        cat {{ tmp_key_path }} | gpg --batch --yes --dearmor --quiet -o {{ key_location }}
+      args:
+        executable: /bin/bash
+
+    - name: Update APT package cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install APT repository
+      ansible.builtin.apt_repository:
+        repo: "{{ apt_url }}"
+        state: present
+        filename: "{{ application_key }}"
+
+- name: Cleanup
+  block:
+    - name: Remove tmp file
+      ansible.builtin.file:
+        path: "{{ tmp_key_location }}"
+        state: absent

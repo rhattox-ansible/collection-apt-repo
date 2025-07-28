@@ -1,0 +1,8 @@
+namespace: rhattox
+name: apt_repo_install
+version: 1.0.0
+readme: README.md
+authors:
+  - rhattox
+description: APT Repository Installation
+license: MIT
