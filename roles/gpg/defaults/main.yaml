@@ -9,18 +9,16 @@ prerequisite_packages: |
   - lsb-release
   - software-properties-common
   - wget
-
-keyring_extension: gpg
-application_key: "{{ application_name }}.{{ keyring_extension }}"
-tmp_path: /tmp/collection-apt-repository
-tmp_key_path: "{{ tmp_path }}/{{ application_key }}"
 keyring_path: /etc/apt/keyrings
 
-key_location: "{{ keyring_path }}/{{ application_key }}"
 
-#
-# INPUT VARS
-#
-application_name: docker
-gpg_key_url: "https://download.docker.com/linux/{{ ansible_facts.distribution | lower }}/gpg"
-apt_url: "deb [arch=amd64 signed-by={{ key_location }}] {{ gpg_key_url }} {{ ansible_facts.distribution_release }} stable"
+
+app_url: https://download.docker.com/linux/debian/gpg
+key_final_destination: /etc/apt/keyrings/docker.asc
+sourcelist_destination: /etc/apt/sources.list.d/docker.list
+sourcelist_content: >-
+  deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc]
+  https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable
+
+
+

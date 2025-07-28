@@ -1,74 +1,39 @@
-- name: Prerequisites
-  block:
-    - name: Create Directory
-      ansible.builtin.file:
-        path: "{{ tmp_path }}"
-        state: directory
-        mode: "0777"
-        owner: "{{ ansible_env.SUDO_USER }}"
-        group: "{{ ansible_env.SUDO_USER }}"
+---
+# Tasks for adding Docker GPG key and repository
+- name: Ensure prerequisites are installed
+  ansible.builtin.package:
+    name: "{{ prerequisite_packages }}"
+    state: present
+  become: true
 
-- name: Update Packages And Add Required Packages
-  block:
-    - name: Update APT package cache
-      ansible.builtin.apt:
-        update_cache: true
+- name: Create keyrings directory
+  ansible.builtin.file:
+    path: "{{ keyring_path }}"
+    state: directory
+    mode: '0755'
+  become: true
 
-    - name: Install Prerequisites
-      ansible.builtin.apt:
-        name: "{{ prerequisite_packages | from_yaml }}"
-        state: present
+- name: Download Docker GPG key
+  ansible.builtin.get_url:
+    url: "{{ app_url }}"
+    dest: "{{ key_final_destination }}"
+    mode: '0644'
+  become: true
 
-- name: Cleanup Old Installation
-  block:
-    - name: Create Directory "{{ keyring_path }}"
-      ansible.builtin.file:
-        path: "{{ tmp_path }}"
-        state: directory
-        mode: "0777"
-        owner: "{{ ansible_env.SUDO_USER }}"
-        group: "{{ ansible_env.SUDO_USER }}"
+- name: Set proper permissions on GPG key
+  ansible.builtin.file:
+    path: "{{ key_final_destination }}"
+    mode: 'a+r'
+  become: true
 
-    - name: Check if the GPG Key exists
-      ansible.builtin.stat:
-        path: "{{ key_location }}"
-      register: file_check
+- name: Add Docker repository to sources list
+  ansible.builtin.copy:
+    content: "{{ sourcelist_content }}"
+    dest: "{{ sourcelist_destination }}"
+    mode: '0644'
+  become: true
 
-    - name: Remove GPG file
-      when: file_check.stat.exists
-      ansible.builtin.file:
-        path: "{{ key_location }}"
-        state: absent
-        force: true
-
-- name: Download And Install GPG Key
-  block:
-    - name: Download GPG key
-      ansible.builtin.get_url:
-        url: "{{ gpg_key_url }}"
-        dest: "{{ tmp_key_path }}"
-        mode: "0777"
-
-    - name: Install GPG Key
-      changed_when: false
-      ansible.builtin.shell: |
-        cat {{ tmp_key_path }} | gpg --batch --yes --dearmor --quiet -o {{ key_location }}
-      args:
-        executable: /bin/bash
-
-    - name: Update APT package cache
-      ansible.builtin.apt:
-        update_cache: true
-
-    - name: Install APT repository
-      ansible.builtin.apt_repository:
-        repo: "{{ apt_url }}"
-        state: present
-        filename: "{{ application_key }}"
-
-- name: Cleanup
-  block:
-    - name: Remove tmp file
-      ansible.builtin.file:
-        path: "{{ tmp_key_location }}"
-        state: absent
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  become: true
