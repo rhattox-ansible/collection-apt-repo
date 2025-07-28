@@ -1,3 +1,14 @@
+- name: Prerequisites
+  block:
+    - name: Create Directory
+      ansible.builtin.file:
+        path: "{{ tmp_path }}"
+        state: directory
+        mode: "0777"
+        owner: "{{ ansible_env.SUDO_USER }}"
+        group: "{{ ansible_env.SUDO_USER }}"
+
+
 - name: Update Packages And Add Required Packages
   block:
     - name: Update APT package cache
