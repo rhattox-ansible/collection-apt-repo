@@ -13,6 +13,4 @@ keyring_path: /etc/apt/keyrings
 app_url: https://download.docker.com/linux/debian/gpg
 key_final_destination: /etc/apt/keyrings/docker.asc
 sourcelist_destination: /etc/apt/sources.list.d/docker.list
-sourcelist_content: >-
-  deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc]
-  https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+sourcelist_content: deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
